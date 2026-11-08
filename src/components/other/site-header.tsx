@@ -16,14 +16,14 @@ export function SiteHeader() {
           className="mx-2 h-4 data-vertical:self-auto"
         />
         <h1 className="text-base font-medium">
-          {pathname
-            .slice(1)
-            .split("/")
-            .map(
-              (word: string) => word.charAt(0).toUpperCase() + word.slice(1),
-            )[1]
-            .split("-")
-            .join(" ")}
+          {
+            pathname
+              .slice(1)
+              .split("/")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1),
+              )[1]
+          }
         </h1>
       </div>
     </header>
