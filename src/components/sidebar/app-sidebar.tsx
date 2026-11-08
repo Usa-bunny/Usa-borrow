@@ -16,19 +16,35 @@ import {
 import { CommandIcon } from "lucide-react";
 import { getSidebarMenu } from "@/config/sidebar";
 import { Separator } from "../ui/separator";
-
-const role = "Admin";
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: getSidebarMenu(role),
-};
+import { useQuery } from "@tanstack/react-query";
+import { createClient } from "@/utils/supabase/client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+      const profile = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      return profile?.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const data = {
+    user: {
+      name: profile?.nama_lengkap,
+      email: profile?.email,
+    },
+    navMain: getSidebarMenu(profile?.role),
+  };
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -45,7 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-          <Separator />
+        <Separator />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
