@@ -1,5 +1,3 @@
-
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -76,6 +74,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       setSuccessMessage("Registrasi berhasil! Mengalihkan ke sistem...");
 
       setTimeout(() => {
+        setFullname("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setErrorMessage(null);
+        setSuccessMessage(null);
         router.push("/");
       }, 1500);
     } catch (error: any) {
@@ -190,7 +194,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             )}
             <FieldGroup>
               <Field>
-                <Button type="submit" className="h-12" onSubmit={handleSignup} disabled={disabledButton || loading}>
+                <Button
+                  type="submit"
+                  className="h-12"
+                  onSubmit={handleSignup}
+                  disabled={disabledButton || loading}
+                >
                   {loading ? "Memproses..." : "Create Account"}
                 </Button>
                 <FieldDescription className="px-6 text-center">

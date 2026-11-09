@@ -53,7 +53,7 @@ export function LoginForm({
 
       const { data: profileData, error: profileError } = await supabase
         .from("users")
-        .select("role")
+        .select("*")
         .eq("id", logInData.user?.id || "")
         .single();
 
@@ -62,6 +62,10 @@ export function LoginForm({
       setSuccessMessage("Login berhasil! Mengalihkan ke sistem...");
 
       setTimeout(() => {
+        setEmail("");
+        setPassword("");
+        setErrorMessage(null);
+        setSuccessMessage(null);
         router.push("/");
       }, 1500);
     } catch (error: any) {
