@@ -7,4 +7,4 @@ export const kategoriSchema = z.object({
   deskripsi: z.string().nullable().optional(),
 });
 
-export type Kategori = z.infer<typeof kategoriSchema>;
+export type Kategori = z.infer<typeof kategoriSchema>; 

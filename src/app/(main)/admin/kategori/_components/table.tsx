@@ -16,17 +16,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { getColumns } from "./columns";
-import { KategoriFormDrawer, type KategoriInput } from "./form-drawer";
+import { FormDrawer, type InputData } from "./form-drawer";
 import type { Kategori } from "./schema";
-import {
-  useKategori,
-  useKategoriMutations,
-} from "../../../../../hooks/use-kategori";
+import { useCrud } from "@/hooks/use-crud";
 
-export function KategoriTable() {
-  const { data = [], isFetching, refetch } = useKategori();
-  const { addKategori, updateKategori, deleteKategori } =
-    useKategoriMutations();
+export function CRUDTable() {
+  const { query, mutations } = useCrud<Kategori, InputData>({
+    table: "kategori",
+    queryKey: ["kategori"],
+    orderBy: { column: "nama_kategori" },
+  });
+
+  const { data = [], isFetching, refetch } = query;
+  const { add, update, delete: deleteMutation, isPending } = mutations;
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Kategori | null>(null);
@@ -49,13 +51,13 @@ export function KategoriTable() {
     setDrawerOpen(true);
   }
 
-  function handleSubmit(values: KategoriInput) {
+  function handleSubmit(values: InputData) {
     if (editing) {
-      updateKategori.mutate(
+      update.mutate(
         { id: editing.id, values },
         {
           onSuccess: () => {
-            toast.success("Kategori berhasil diperbarui");
+            toast.success("Alat berhasil diperbarui");
             setDrawerOpen(false);
           },
           onError: (error: any) =>
@@ -63,9 +65,9 @@ export function KategoriTable() {
         },
       );
     } else {
-      addKategori.mutate(values, {
+      add.mutate(values, {
         onSuccess: () => {
-          toast.success("Kategori berhasil ditambahkan");
+          toast.success("Alat berhasil ditambahkan");
           setDrawerOpen(false);
         },
         onError: (error: any) =>
@@ -76,19 +78,14 @@ export function KategoriTable() {
 
   function confirmDelete() {
     if (!deleting) return;
-    deleteKategori.mutate(deleting.id, {
+    deleteMutation.mutate(deleting.id, {
       onSuccess: () => {
-        toast.success("Kategori berhasil dihapus");
+        toast.success("Alat berhasil dihapus");
         setDeleting(null);
       },
       onError: (error: any) => toast.error(error.message || "Gagal menghapus"),
     });
   }
-
-  const isMutating =
-    addKategori.isPending ||
-    updateKategori.isPending ||
-    deleteKategori.isPending;
 
   return (
     <>
@@ -103,7 +100,7 @@ export function KategoriTable() {
               variant="outline"
               size="sm"
               onClick={() => refetch()}
-              disabled={isFetching || isMutating}
+              disabled={isFetching || isPending}
               title="Refresh data"
             >
               <RefreshCwIcon className={isFetching ? "animate-spin" : ""} />
@@ -111,7 +108,7 @@ export function KategoriTable() {
             <Button
               size="sm"
               onClick={handleAdd}
-              disabled={isFetching || isMutating}
+              disabled={isFetching || isPending}
             >
               <PlusIcon className="mr-2 size-4" />
               <span className="hidden lg:inline">Tambah Kategori</span>
@@ -120,10 +117,10 @@ export function KategoriTable() {
         )}
       />
 
-      <KategoriFormDrawer
+      <FormDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        kategori={editing}
+        data={editing}
         onSubmit={handleSubmit}
       />
 
@@ -140,15 +137,15 @@ export function KategoriTable() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteKategori.isPending}>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
               Batal
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={confirmDelete}
-              disabled={deleteKategori.isPending}
+              disabled={deleteMutation.isPending}
             >
-              {deleteKategori.isPending ? "Menghapus..." : "Hapus"}
+              {deleteMutation.isPending ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

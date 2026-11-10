@@ -13,7 +13,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { CommandIcon } from "lucide-react";
 import { getSidebarMenu } from "@/config/sidebar";
 import { Separator } from "../ui/separator";
 import { useQuery } from "@tanstack/react-query";
@@ -38,12 +37,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     staleTime: 1000 * 60 * 5,
   });
 
+  const sidebarMenu = profile?.role ? getSidebarMenu(profile.role) : [];
+
   const data = {
     user: {
       name: profile?.nama_lengkap,
       email: profile?.email,
     },
-    navMain: getSidebarMenu(profile?.role),
+    navMain: sidebarMenu,
   };
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -54,10 +55,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<a href="#" />}
             >
-              <CommandIcon className="size-5!" />
-              <span className="text-base font-semibold">
-                Aplikasi Peminjaman Alat
-              </span>
+              <img src="/logo.png" alt="logo" className="w-6" />
+              <span className="text-base font-semibold">Usa Borrow</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

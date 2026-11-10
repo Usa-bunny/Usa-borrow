@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
-import type { KategoriInput } from "../app/(main)/admin/kategori/_components/form-drawer";
-import type { Kategori } from "../app/(main)/admin/kategori/_components/schema";
+import type { KategoriInput } from "../app/(main)/admin/kategori/_component_t/form-drawer";
+import type { Kategori } from "../app/(main)/admin/kategori/_component_t/schema";
 
 export function useKategori() {
   const supabase = createClient();

@@ -1,4 +1,4 @@
-import { cn } from "cn";
+import { cn } from "@/lib/utils"; // Pastikan path import cn Anda sudah benar
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertTriangleIcon, EyeIcon, EyeOffIcon, InfoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -31,13 +31,15 @@ export function LoginForm({
 
   const isButtonDisabled = !email || !password;
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     setLoading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      const supabase = await createClient();
+      const supabase = createClient();
 
       const { data: logInData, error: logInError } =
         await supabase.auth.signInWithPassword({
@@ -75,7 +77,7 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardContent>
-          <form action={handleLogin}>
+          <form onSubmit={handleLogin}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -136,7 +138,6 @@ export function LoginForm({
                   <Button
                     type="submit"
                     className="h-12"
-                    onSubmit={handleLogin}
                     disabled={isButtonDisabled || loading}
                   >
                     {loading ? "Memproses..." : "Login"}

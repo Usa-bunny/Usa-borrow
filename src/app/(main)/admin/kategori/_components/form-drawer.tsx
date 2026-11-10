@@ -14,34 +14,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { kategoriSchema, type Kategori } from "./schema";
+import { useFormValidation } from "@/hooks/use-form-validation";
 
-export type KategoriInput = Omit<Kategori, "id">;
-
-const EMPTY: KategoriInput = {
-  kode_kategori: "",
-  nama_kategori: "",
-  deskripsi: "",
-};
+export type InputData = Omit<Kategori, "id">;
 
 const inputSchema = kategoriSchema.omit({ id: true }).extend({
-  kode_kategori: kategoriSchema.shape.kode_kategori.min(1, "Kode kategori wajib diisi"),
-  nama_kategori: kategoriSchema.shape.nama_kategori.min(1, "Nama kategori wajib diisi"),
+  kode_kategori: kategoriSchema.shape.kode_kategori.min(
+    1,
+    "Kode kategori wajib diisi",
+  ),
+  nama_kategori: kategoriSchema.shape.nama_kategori.min(
+    1,
+    "Nama kategori wajib diisi",
+  ),
 });
 
-interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  kategori: Kategori | null;
-  onSubmit: (values: KategoriInput) => void;
-}
-
-export function KategoriFormDrawer({
+export function FormDrawer({
   open,
   onOpenChange,
-  kategori,
+  data,
   onSubmit,
-}: Props) {
-  const isEdit = !!kategori;
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: Kategori | null;
+  onSubmit: (values: InputData) => void;
+}) {
+  const isEdit = !!data;
   const isMobile = useIsMobile();
 
   return (
@@ -53,18 +52,16 @@ export function KategoriFormDrawer({
     >
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>
-            {isEdit ? "Edit Kategori" : "Tambah Kategori"}
-          </DrawerTitle>
+          <DrawerTitle>{isEdit ? "Edit Alat" : "Tambah Alat"}</DrawerTitle>
           <DrawerDescription>
             {isEdit
-              ? "Ubah data kategori lalu simpan."
-              : "Isi form di bawah untuk menambahkan kategori baru."}
+              ? "Ubah data alat lalu simpan."
+              : "Isi form di bawah untuk menambahkan alat baru."}
           </DrawerDescription>
         </DrawerHeader>
 
-        <KategoriForm
-          kategori={kategori}
+        <Form
+          data={data}
           onSubmit={(values) => {
             onSubmit(values);
             onOpenChange(false);
@@ -77,51 +74,34 @@ export function KategoriFormDrawer({
   );
 }
 
-function KategoriForm({
-  kategori,
+function Form({
+  data,
   onSubmit,
   onCancel,
   isEdit,
 }: {
-  kategori: Kategori | null;
-  onSubmit: (values: KategoriInput) => void;
+  data: Kategori | null;
+  onSubmit: (values: InputData) => void;
   onCancel: () => void;
   isEdit: boolean;
 }) {
-  const [values, setValues] = React.useState<KategoriInput>(
-    kategori
-      ? {
-          kode_kategori: kategori.kode_kategori,
-          nama_kategori: kategori.nama_kategori,
-          deskripsi: kategori.deskripsi || "",
-        }
-      : EMPTY,
+  const initialValues: InputData = data
+    ? {
+        kode_kategori: data.kode_kategori,
+        nama_kategori: data.nama_kategori,
+        deskripsi: data.deskripsi || "",
+      }
+    : {
+        kode_kategori: "",
+        nama_kategori: "",
+        deskripsi: "",
+      };
+
+  const { values, errors, set, handleSubmit } = useFormValidation(
+    initialValues,
+    inputSchema,
+    onSubmit,
   );
-  
-
-  const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
-
-  const set = <K extends keyof KategoriInput>(
-    key: K,
-    value: KategoriInput[K],
-  ) => setValues((prev) => ({ ...prev, [key]: value }));
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const result = inputSchema.safeParse(values);
-    if (!result.success) {
-      const fieldErrors: { [key: string]: string } = {};
-      result.error.issues.forEach((issue) => {
-        if (issue.path[0]) {
-          fieldErrors[issue.path[0] as string] = issue.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-    setErrors({});
-    onSubmit(result.data);
-  }
 
   return (
     <>
