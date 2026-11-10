@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export function SectionStatistic({
   items,
 }: {
-  items: { value: string; label: string }[];
+  items: { value: string | number; label: string }[];
 }) {
   return (
     <div className="w-full px-4 lg:px-6">

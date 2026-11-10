@@ -23,22 +23,16 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [disabledButton, setDisableButton] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (
-      fullname &&
-      email &&
-      password &&
-      confirmPassword &&
-      password === confirmPassword
-    )
-      setDisableButton(false);
-    else setDisableButton(true);
-  }, [password, confirmPassword]);
+  const isButtonDisabled =
+    !fullname ||
+    !email ||
+    !password ||
+    !confirmPassword ||
+    password !== confirmPassword;
 
   const handleSignup = async () => {
     setLoading(true);
@@ -198,7 +192,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   type="submit"
                   className="h-12"
                   onSubmit={handleSignup}
-                  disabled={disabledButton || loading}
+                  disabled={isButtonDisabled || loading}
                 >
                   {loading ? "Memproses..." : "Create Account"}
                 </Button>

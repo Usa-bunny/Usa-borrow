@@ -25,15 +25,11 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [disabledButton, setDisableButton] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (email && password) setDisableButton(false);
-    else setDisableButton(true);
-  }, [email, password]);
+  const isButtonDisabled = !email || !password;
 
   const handleLogin = async () => {
     setLoading(true);
@@ -141,7 +137,7 @@ export function LoginForm({
                     type="submit"
                     className="h-12"
                     onSubmit={handleLogin}
-                    disabled={disabledButton || loading}
+                    disabled={isButtonDisabled || loading}
                   >
                     {loading ? "Memproses..." : "Login"}
                   </Button>
