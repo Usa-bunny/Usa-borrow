@@ -1,14 +1,7 @@
 "use client";
 
 import { createColumnHelper } from "@tanstack/react-table";
-import {
-  CircleCheckIcon,
-  LoaderIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MoreVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,84 +11,49 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
-import type { Document } from "./schema";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
+import type { ColumnActions } from "@/components/crud/crud-table";
+import type { User, UserRole } from "./schema";
 
-const columnHelper = createColumnHelper<Features, Document>();
+const columnHelper = createColumnHelper<Features, User>();
 
-export interface ColumnActions {
-  onEdit: (item: Document) => void;
-  onDelete: (item: Document) => void;
+const ROLE_STYLES: Record<UserRole, string> = {
+  Admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  Petugas: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  Peminjam: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+};
+
+function RoleBadge({ role }: { role: UserRole }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_STYLES[role]}`}
+    >
+      {role}
+    </span>
+  );
 }
 
-export function getColumns({ onEdit, onDelete }: ColumnActions) {
+export function getColumns({ onEdit, onDelete }: ColumnActions<User>) {
   return columnHelper.columns([
-    columnHelper.accessor("header", {
+    columnHelper.accessor("nama_lengkap", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Header" />
+        <DataTableColumnHeader column={column} title="Nama Lengkap" />
       ),
       enableHiding: false,
       enableSorting: true,
     }),
-    columnHelper.accessor("type", {
+    columnHelper.accessor("email", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Section Type" />
+        <DataTableColumnHeader column={column} title="Email" />
       ),
-      cell: ({ row }) => (
-        <Badge variant="outline" className="px-1.5 text-muted-foreground">
-          {row.original.type}
-        </Badge>
-      ),
+      enableSorting: true,
     }),
-    columnHelper.accessor("status", {
+    columnHelper.accessor("role", {
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
+        <DataTableColumnHeader column={column} title="Role" />
       ),
-      cell: ({ row }) => (
-        <Badge variant="outline" className="px-1.5 text-muted-foreground">
-          {row.original.status === "Done" ? (
-            <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
-          ) : (
-            <LoaderIcon />
-          )}
-          {row.original.status}
-        </Badge>
-      ),
-    }),
-    columnHelper.accessor("target", {
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="Target"
-          className="justify-end"
-        />
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">{row.original.target}</div>
-      ),
-    }),
-    columnHelper.accessor("limit", {
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="Limit"
-          className="justify-end"
-        />
-      ),
-      cell: ({ row }) => <div className="text-right">{row.original.limit}</div>,
-    }),
-    columnHelper.accessor("reviewer", {
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Reviewer" />
-      ),
-      cell: ({ row }) =>
-        row.original.reviewer === "Assign reviewer" ? (
-          <span className="text-muted-foreground italic">
-            Belum ada reviewer
-          </span>
-        ) : (
-          row.original.reviewer
-        ),
+      cell: ({ row }) => <RoleBadge role={row.original.role} />,
+      enableSorting: true,
     }),
     columnHelper.display({
       id: "actions",
@@ -117,14 +75,7 @@ export function getColumns({ onEdit, onDelete }: ColumnActions) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-32">
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              <PencilIcon /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => onDelete(row.original)}
-            >
-              <Trash2Icon /> Delete
+              <PencilIcon className="mr-2 size-4" /> Edit
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

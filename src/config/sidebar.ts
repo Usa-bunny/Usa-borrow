@@ -27,8 +27,7 @@ const adminMenu: NavItem[] = [
   { title: "Manage User", url: "/admin/users", icon: Users },
   { title: "Manage Alat", url: "/admin/alat", icon: HardDrive },
   { title: "Manage Kategori", url: "/admin/kategori", icon: Tags },
-  { title: "Manage Peminjaman", url: "/admin/peminjaman", icon: ClipboardList },
-  { title: "Manage Pengembalian", url: "/admin/pengembalian", icon: RefreshCw },
+  { title: "Peminjaman & Pengembalian", url: "/admin/transaksi", icon: ClipboardList },
   { title: "Log Aktivitas", url: "/admin/logs", icon: History },
 ];
 

@@ -35,10 +35,11 @@ export interface CrudTableProps<TData extends { id: string }, TInput> {
   mutations: CrudMutations<TInput>;
   getColumns: (actions: ColumnActions<TData>) => any[];
   renderForm: (props: CrudFormProps<TData, TInput>) => React.ReactNode;
-  entityName: string; // "Alat", "Kategori", ...
-  getItemLabel: (item: TData) => string; // untuk dialog hapus
+  entityName: string;
+  getItemLabel: (item: TData) => string;
   searchPlaceholder?: string;
   addButtonLabel?: string;
+  canCreate?: boolean;
 }
 
 export function CrudTable<TData extends { id: string }, TInput>({
@@ -50,6 +51,7 @@ export function CrudTable<TData extends { id: string }, TInput>({
   getItemLabel,
   searchPlaceholder,
   addButtonLabel,
+  canCreate = true,
 }: CrudTableProps<TData, TInput>) {
   const { data = [], isFetching, refetch } = query;
   const { add, update, delete: deleteMutation, isPending } = mutations;
@@ -134,12 +136,18 @@ export function CrudTable<TData extends { id: string }, TInput>({
             >
               <RefreshCwIcon className={isFetching ? "animate-spin" : ""} />
             </Button>
-            <Button size="sm" onClick={handleAdd} disabled={isFetching || isPending}>
-              <PlusIcon className="mr-2 size-4" />
-              <span className="hidden lg:inline">
-                {addButtonLabel ?? `Tambah ${entityName}`}
-              </span>
-            </Button>
+            {canCreate && (
+              <Button
+                size="sm"
+                onClick={handleAdd}
+                disabled={isFetching || isPending}
+              >
+                <PlusIcon className="mr-2 size-4" />
+                <span className="hidden lg:inline">
+                  {addButtonLabel ?? `Tambah ${entityName}`}
+                </span>
+              </Button>
+            )}
           </div>
         )}
       />

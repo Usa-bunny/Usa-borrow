@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -20,50 +20,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { documentSchema, type Document } from "./schema";
+import { userRoleSchema, type User, type UserRole } from "./schema";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import type { CrudFormProps } from "@/components/crud/crud-table";
 
-export type DocumentInput = Omit<Document, "id">;
-
-const TYPES = [
-  "Table of Contents",
-  "Executive Summary",
-  "Technical Approach",
-  "Design",
-  "Capabilities",
-  "Focus Documents",
-  "Narrative",
-  "Cover Page",
-];
-const STATUSES = ["Done", "In Progress", "Not Started"];
-const REVIEWERS = ["Eddie Lake", "Jamik Tashpulatov", "Emily Whalen"];
-
-const EMPTY: DocumentInput = {
-  header: "",
-  type: TYPES[0],
-  status: "Not Started",
-  target: "",
-  limit: "",
-  reviewer: "Assign reviewer",
+export type InputData = {
+  nama_lengkap: string;
+  role: UserRole;
 };
 
-const inputSchema = documentSchema.omit({ id: true }).extend({
-  header: documentSchema.shape.header.min(1, "Header wajib diisi"),
+const inputSchema = z.object({
+  nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi"),
+  role: userRoleSchema,
 });
 
-interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  document: Document | null;
-  onSubmit: (values: DocumentInput) => void;
-}
-
-export function DocumentFormDrawer({
+export function FormDrawer({
   open,
   onOpenChange,
-  document,
+  data,
   onSubmit,
-}: Props) {
-  const isEdit = !!document;
+}: CrudFormProps<User, InputData>) {
   const isMobile = useIsMobile();
 
   return (
@@ -75,172 +51,96 @@ export function DocumentFormDrawer({
     >
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>
-            {isEdit ? "Edit Section" : "Tambah Section"}
-          </DrawerTitle>
+          <DrawerTitle>Edit User</DrawerTitle>
           <DrawerDescription>
-            {isEdit
-              ? "Ubah data section lalu simpan."
-              : "Isi data untuk section baru."}
+            Ubah nama atau role user lalu simpan.
           </DrawerDescription>
         </DrawerHeader>
 
-        <DocumentForm
-          document={document}
+        <Form
+          data={data}
           onSubmit={(values) => {
             onSubmit(values);
             onOpenChange(false);
           }}
           onCancel={() => onOpenChange(false)}
-          isEdit={isEdit}
         />
       </DrawerContent>
     </Drawer>
   );
 }
 
-function DocumentForm({
-  document,
+function Form({
+  data,
   onSubmit,
   onCancel,
-  isEdit,
 }: {
-  document: Document | null;
-  onSubmit: (values: DocumentInput) => void;
+  data: User | null;
+  onSubmit: (values: InputData) => void;
   onCancel: () => void;
-  isEdit: boolean;
 }) {
-  const [values, setValues] = React.useState<DocumentInput>(
-    document
-      ? {
-          header: document.header,
-          type: document.type,
-          status: document.status,
-          target: document.target,
-          limit: document.limit,
-          reviewer: document.reviewer,
-        }
-      : EMPTY,
+  const initialValues: InputData = data
+    ? { nama_lengkap: data.nama_lengkap, role: data.role }
+    : { nama_lengkap: "", role: "Peminjam" };
+
+  const { values, errors, set, handleSubmit } = useFormValidation(
+    initialValues,
+    inputSchema,
+    onSubmit,
   );
-  const [error, setError] = React.useState<string | null>(null);
-
-  const set = <K extends keyof DocumentInput>(
-    key: K,
-    value: DocumentInput[K],
-  ) => setValues((prev) => ({ ...prev, [key]: value }));
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const result = inputSchema.safeParse(values);
-    if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Data tidak valid");
-      return;
-    }
-    onSubmit(result.data);
-  }
 
   return (
     <>
       <form
-        id="document-form"
+        id="user-form"
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
         <div className="flex flex-col gap-3">
-          <Label htmlFor="header">Header</Label>
-          <Input
-            id="header"
-            value={values.header}
-            onChange={(e) => set("header", e.target.value)}
-            aria-invalid={!!error}
-          />
-          {error && <p className="text-xs text-destructive">{error}</p>}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="type">Type</Label>
-            <Select
-              value={values.type}
-              onValueChange={(v) => v && set("type", v)}
-            >
-              <SelectTrigger id="type" className="w-full">
-                <SelectValue placeholder="Pilih type" />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={values.status}
-              onValueChange={(v) => v && set("status", v)}
-            >
-              <SelectTrigger id="status" className="w-full">
-                <SelectValue placeholder="Pilih status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="target">Target</Label>
-            <Input
-              id="target"
-              value={values.target}
-              onChange={(e) => set("target", e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="limit">Limit</Label>
-            <Input
-              id="limit"
-              value={values.limit}
-              onChange={(e) => set("limit", e.target.value)}
-            />
-          </div>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" value={data?.email ?? ""} disabled readOnly />
+          <p className="text-xs text-muted-foreground">
+            Email terikat ke akun auth dan tidak bisa diubah di sini.
+          </p>
         </div>
 
         <div className="flex flex-col gap-3">
-          <Label htmlFor="reviewer">Reviewer</Label>
+          <Label htmlFor="nama_lengkap">Nama Lengkap</Label>
+          <Input
+            id="nama_lengkap"
+            value={values.nama_lengkap}
+            onChange={(e) => set("nama_lengkap", e.target.value)}
+            aria-invalid={!!errors.nama_lengkap}
+          />
+          {errors.nama_lengkap && (
+            <p className="text-xs text-destructive">{errors.nama_lengkap}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="role">Role</Label>
           <Select
-            value={values.reviewer}
-            onValueChange={(v) => v && set("reviewer", v)}
+            value={values.role}
+            onValueChange={(v) => v && set("role", v as UserRole)}
           >
-            <SelectTrigger id="reviewer" className="w-full">
-              <SelectValue placeholder="Pilih reviewer" />
+            <SelectTrigger id="role" className="w-full">
+              <SelectValue placeholder="Pilih role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Assign reviewer">
-                Belum ada reviewer
-              </SelectItem>
-              {REVIEWERS.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r}
-                </SelectItem>
-              ))}
+              <SelectItem value="Admin">Admin</SelectItem>
+              <SelectItem value="Petugas">Petugas</SelectItem>
+              <SelectItem value="Peminjam">Peminjam</SelectItem>
             </SelectContent>
           </Select>
+          {errors.role && (
+            <p className="text-xs text-destructive">{errors.role}</p>
+          )}
         </div>
       </form>
 
       <DrawerFooter>
-        <Button type="submit" form="document-form">
-          {isEdit ? "Simpan Perubahan" : "Tambah"}
+        <Button type="submit" form="user-form">
+          Simpan Perubahan
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Batal

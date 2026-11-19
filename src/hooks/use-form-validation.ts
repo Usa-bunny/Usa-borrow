@@ -11,7 +11,6 @@ export function useFormValidation<TData>(
 
   const set = <K extends keyof TData>(key: K, value: TData[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
-    // Optional: Clear error saat user mengetik
     if (errors[key as string]) {
       setErrors((prev) => ({ ...prev, [key]: undefined } as any));
     }
