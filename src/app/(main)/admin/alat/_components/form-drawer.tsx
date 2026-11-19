@@ -24,8 +24,8 @@ import {
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { useCrud } from "@/hooks/use-crud";
 
-const inputSchema = alatSchema.omit({ id: true, kategori: true }).extend({
-  kode_alat: alatSchema.shape.kode_alat.min(1, "Kode Alat wajib diisi"),
+// HAPUS kode_alat dari schema validasi karena dibuat oleh DB
+const inputSchema = alatSchema.omit({ id: true, kategori: true, kode_alat: true }).extend({
   nama_alat: alatSchema.shape.nama_alat.min(1, "Nama Alat wajib diisi"),
   id_kategori: alatSchema.shape.id_kategori.min(1, "Kategori wajib diisi"),
   stok: z.number().min(0, "Stok tidak boleh negatif"),
@@ -102,7 +102,7 @@ function Form({
         deskripsi: data.deskripsi || "",
       }
     : {
-        kode_alat: "",
+        kode_alat: "", // Biarkan kosong, DB akan mengisi
         nama_alat: "",
         id_kategori: "",
         stok: 0,
@@ -122,22 +122,20 @@ function Form({
   return (
     <>
       <form
-        id="kategori-form"
+        id="alat-form"
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
-        <div className="flex flex-col gap-3">
-          <Label htmlFor="kode_alat">Kode Alat</Label>
-          <Input
-            id="kode_alat"
-            value={values.kode_alat}
-            onChange={(e) => set("kode_alat", e.target.value)}
-            aria-invalid={!!errors.kode_alat}
-          />
-          {errors.kode_alat && (
-            <p className="text-xs text-destructive">{errors.kode_alat}</p>
-          )}
-        </div>
+        {/* TAMPILKAN KODE HANYA SAAT EDIT */}
+        {isEdit && data && (
+          <div className="flex flex-col gap-3">
+            <Label>Kode Alat</Label>
+            <Input value={data.kode_alat} disabled />
+            <p className="text-xs text-muted-foreground">
+              Kode alat dibuat otomatis oleh sistem.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3">
           <Label htmlFor="nama_alat">Nama Alat</Label>
@@ -205,7 +203,7 @@ function Form({
       </form>
 
       <DrawerFooter>
-        <Button type="submit" form="kategori-form">
+        <Button type="submit" form="alat-form">
           {isEdit ? "Simpan Perubahan" : "Tambah"}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>

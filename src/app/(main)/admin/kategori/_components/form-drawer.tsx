@@ -16,11 +16,8 @@ import { kategoriSchema, type Kategori, type KategoriInput } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import type { CrudFormProps } from "@/components/crud/crud-table";
 
-const inputSchema = kategoriSchema.omit({ id: true }).extend({
-  kode_kategori: kategoriSchema.shape.kode_kategori.min(
-    1,
-    "Kode kategori wajib diisi",
-  ),
+// HAPUS kode_kategori dari schema validasi
+const inputSchema = kategoriSchema.omit({ id: true, kode_kategori: true }).extend({
   nama_kategori: kategoriSchema.shape.nama_kategori.min(
     1,
     "Nama kategori wajib diisi",
@@ -87,7 +84,7 @@ function Form({
         deskripsi: data.deskripsi || "",
       }
     : {
-        kode_kategori: "",
+        kode_kategori: "", // Biarkan kosong, DB akan mengisi
         nama_kategori: "",
         deskripsi: "",
       };
@@ -105,18 +102,16 @@ function Form({
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
-        <div className="flex flex-col gap-3">
-          <Label htmlFor="kode_kategori">Kode Kategori</Label>
-          <Input
-            id="kode_kategori"
-            value={values.kode_kategori}
-            onChange={(e) => set("kode_kategori", e.target.value)}
-            aria-invalid={!!errors.kode_kategori}
-          />
-          {errors.kode_kategori && (
-            <p className="text-xs text-destructive">{errors.kode_kategori}</p>
-          )}
-        </div>
+        {/* TAMPILKAN KODE HANYA SAAT EDIT */}
+        {isEdit && data && (
+          <div className="flex flex-col gap-3">
+            <Label>Kode Kategori</Label>
+            <Input value={data.kode_kategori} disabled />
+            <p className="text-xs text-muted-foreground">
+              Kode kategori dibuat otomatis oleh sistem.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3">
           <Label htmlFor="nama_kategori">Nama Kategori</Label>
