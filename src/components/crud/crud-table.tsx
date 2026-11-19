@@ -3,6 +3,7 @@
 import * as React from "react";
 import { PlusIcon, RefreshCwIcon } from "lucide-react";
 import { toast } from "sonner";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { DataTable } from "@/components/table/data-table";
 import {
   AlertDialog,
@@ -15,64 +16,90 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { getColumns } from "./columns";
-import { FormDrawer, type InputData } from "./form-drawer";
-import type { Alat } from "./schema";
-import { useCrud } from "@/hooks/use-crud";
+import type { CrudMutations } from "@/hooks/use-crud";
 
-export function CRUDTable() {
-  const { query, mutations } = useCrud<Alat, InputData>({
-    table: "alat",
-    queryKey: ["alat"],
-    select: "*, kategori(nama_kategori)",
-    orderBy: { column: "nama_alat" }
-  });
+export interface ColumnActions<TData> {
+  onEdit: (item: TData) => void;
+  onDelete: (item: TData) => void;
+}
 
+export interface CrudFormProps<TData, TInput> {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  data: TData | null;
+  onSubmit: (values: TInput) => void;
+}
+
+export interface CrudTableProps<TData extends { id: string }, TInput> {
+  query: UseQueryResult<TData[], Error>;
+  mutations: CrudMutations<TInput>;
+  getColumns: (actions: ColumnActions<TData>) => any[];
+  renderForm: (props: CrudFormProps<TData, TInput>) => React.ReactNode;
+  entityName: string; // "Alat", "Kategori", ...
+  getItemLabel: (item: TData) => string; // untuk dialog hapus
+  searchPlaceholder?: string;
+  addButtonLabel?: string;
+}
+
+export function CrudTable<TData extends { id: string }, TInput>({
+  query,
+  mutations,
+  getColumns,
+  renderForm,
+  entityName,
+  getItemLabel,
+  searchPlaceholder,
+  addButtonLabel,
+}: CrudTableProps<TData, TInput>) {
   const { data = [], isFetching, refetch } = query;
   const { add, update, delete: deleteMutation, isPending } = mutations;
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<Alat | null>(null);
-  const [deleting, setDeleting] = React.useState<Alat | null>(null);
+  const [formOpen, setFormOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<TData | null>(null);
+  const [deleting, setDeleting] = React.useState<TData | null>(null);
 
   const columns = React.useMemo(
     () =>
       getColumns({
         onEdit: (item) => {
           setEditing(item);
-          setDrawerOpen(true);
+          setFormOpen(true);
         },
         onDelete: (item) => setDeleting(item),
       }),
-    [],
+    [getColumns],
   );
+
+  const entityLower = entityName.toLowerCase();
 
   function handleAdd() {
     setEditing(null);
-    setDrawerOpen(true);
+    setFormOpen(true);
   }
 
-  function handleSubmit(values: InputData) {
+  function handleSubmit(values: TInput) {
+    const onSuccess = () => setFormOpen(false);
+    const onError = (error: any) =>
+      toast.error(error?.message ?? `Gagal menyimpan ${entityLower}`);
+
     if (editing) {
       update.mutate(
         { id: editing.id, values },
         {
           onSuccess: () => {
-            toast.success("Alat berhasil diperbarui");
-            setDrawerOpen(false);
+            toast.success(`${entityName} berhasil diperbarui`);
+            onSuccess();
           },
-          onError: (error: any) =>
-            toast.error(error.message || "Gagal memperbarui"),
+          onError,
         },
       );
     } else {
       add.mutate(values, {
         onSuccess: () => {
-          toast.success("Alat berhasil ditambahkan");
-          setDrawerOpen(false);
+          toast.success(`${entityName} berhasil ditambahkan`);
+          onSuccess();
         },
-        onError: (error: any) =>
-          toast.error(error.message || "Gagal menambahkan"),
+        onError,
       });
     }
   }
@@ -81,10 +108,11 @@ export function CRUDTable() {
     if (!deleting) return;
     deleteMutation.mutate(deleting.id, {
       onSuccess: () => {
-        toast.success("Alat berhasil dihapus");
+        toast.success(`${entityName} berhasil dihapus`);
         setDeleting(null);
       },
-      onError: (error: any) => toast.error(error.message || "Gagal menghapus"),
+      onError: (error: any) =>
+        toast.error(error?.message ?? `Gagal menghapus ${entityLower}`),
     });
   }
 
@@ -94,7 +122,7 @@ export function CRUDTable() {
         columns={columns}
         data={data}
         getRowId={(row) => row.id}
-        searchPlaceholder="Cari kode atau nama alat..."
+        searchPlaceholder={searchPlaceholder}
         toolbar={() => (
           <div className="flex gap-2">
             <Button
@@ -106,24 +134,22 @@ export function CRUDTable() {
             >
               <RefreshCwIcon className={isFetching ? "animate-spin" : ""} />
             </Button>
-            <Button
-              size="sm"
-              onClick={handleAdd}
-              disabled={isFetching || isPending}
-            >
+            <Button size="sm" onClick={handleAdd} disabled={isFetching || isPending}>
               <PlusIcon className="mr-2 size-4" />
-              <span className="hidden lg:inline">Tambah Alat</span>
+              <span className="hidden lg:inline">
+                {addButtonLabel ?? `Tambah ${entityName}`}
+              </span>
             </Button>
           </div>
         )}
       />
 
-      <FormDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        data={editing}
-        onSubmit={handleSubmit}
-      />
+      {renderForm({
+        open: formOpen,
+        onOpenChange: setFormOpen,
+        data: editing,
+        onSubmit: handleSubmit,
+      })}
 
       <AlertDialog
         open={!!deleting}
@@ -131,9 +157,10 @@ export function CRUDTable() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Alat?</AlertDialogTitle>
+            <AlertDialogTitle>Hapus {entityName}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Alat &quot;{deleting?.nama_alat}&quot; akan dihapus permanen.
+              {entityName} &quot;{deleting && getItemLabel(deleting)}&quot; akan
+              dihapus permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

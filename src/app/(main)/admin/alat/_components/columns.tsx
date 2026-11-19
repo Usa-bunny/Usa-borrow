@@ -11,17 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
+import type { ColumnActions } from "@/components/crud/crud-table";
 import type { Alat } from "./schema";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 
 const columnHelper = createColumnHelper<Features, Alat>();
 
-export interface ColumnActions {
-  onEdit: (item: Alat) => void;
-  onDelete: (item: Alat) => void;
-}
-
-export function getColumns({ onEdit, onDelete }: ColumnActions) {
+export function getColumns({ onEdit, onDelete }: ColumnActions<Alat>) {
   return columnHelper.columns([
     columnHelper.accessor("kode_alat", {
       header: ({ column }) => (

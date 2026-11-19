@@ -13,12 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { alatSchema, type Alat } from "./schema";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { alatSchema, type Alat, type AlatInput } from "./schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { useCrud } from "@/hooks/use-crud";
-
-export type InputData = Omit<Alat, "id" | "kategori">;
 
 const inputSchema = alatSchema.omit({ id: true, kategori: true }).extend({
   kode_alat: alatSchema.shape.kode_alat.min(1, "Kode Alat wajib diisi"),
@@ -36,7 +40,7 @@ export function FormDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   data: Alat | null;
-  onSubmit: (values: InputData) => void;
+  onSubmit: (values: AlatInput) => void;
 }) {
   const isEdit = !!data;
   const isMobile = useIsMobile();
@@ -79,17 +83,17 @@ function Form({
   isEdit,
 }: {
   data: Alat | null;
-  onSubmit: (values: InputData) => void;
+  onSubmit: (values: AlatInput) => void;
   onCancel: () => void;
   isEdit: boolean;
 }) {
   const { query: kategoriQuery } = useCrud<any, any>({
     table: "kategori",
     queryKey: ["kategori"],
-    orderBy: { column: "nama_kategori" }
+    orderBy: { column: "nama_kategori" },
   });
 
-  const initialValues: InputData = data
+  const initialValues: AlatInput = data
     ? {
         kode_alat: data.kode_alat,
         nama_alat: data.nama_alat,
@@ -108,11 +112,11 @@ function Form({
   const { values, errors, set, handleSubmit } = useFormValidation(
     initialValues,
     inputSchema,
-    onSubmit
+    onSubmit,
   );
 
   const selectedKategori = kategoriQuery.data?.find(
-    (k: any) => k.id === values.id_kategori
+    (k: any) => k.id === values.id_kategori,
   );
 
   return (
@@ -169,7 +173,11 @@ function Form({
             onValueChange={(v) => v && set("id_kategori", v)}
           >
             <SelectTrigger id="kategori" className="w-full">
-              <SelectValue placeholder={kategoriQuery.isLoading ? "Memuat..." : "Pilih kategori"}>
+              <SelectValue
+                placeholder={
+                  kategoriQuery.isLoading ? "Memuat..." : "Pilih kategori"
+                }
+              >
                 {selectedKategori?.nama_kategori}
               </SelectValue>
             </SelectTrigger>

@@ -1,11 +1,15 @@
 "use client";
 
 import { SectionStatistic } from "@/components/other/section-statistic";
-import { CRUDTable } from "./_components/table";
-import { useKategori } from "../../../../hooks/use-kategori";
+import { CrudTable } from "@/components/crud/crud-table";
+import { useKategori } from "@/hooks/use-kategori";
+import { getColumns } from "./_components/columns";
+import { FormDrawer } from "./_components/form-drawer";
+import type { Kategori, KategoriInput } from "./_components/schema";
 
 export default function ManageKategoriPage() {
-  const { data = [], isLoading } = useKategori();
+  const { query, mutations } = useKategori();
+  const { data = [], isLoading } = query;
 
   const statistic = [
     {
@@ -20,7 +24,15 @@ export default function ManageKategoriPage() {
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <SectionStatistic items={statistic} />
           <div className="flex flex-col gap-4 px-4 lg:px-6">
-            <CRUDTable />
+            <CrudTable<Kategori, KategoriInput>
+              query={query}
+              mutations={mutations}
+              getColumns={getColumns}
+              renderForm={(props) => <FormDrawer {...props} />}
+              entityName="Kategori"
+              getItemLabel={(item) => item.nama_kategori}
+              searchPlaceholder="Cari kode atau nama kategori..."
+            />
           </div>
         </div>
       </div>

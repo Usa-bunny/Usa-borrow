@@ -12,16 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
 import type { Kategori } from "./schema";
+import type { ColumnActions } from "@/components/crud/crud-table";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 
 const columnHelper = createColumnHelper<Features, Kategori>();
 
-export interface ColumnActions {
-  onEdit: (item: Kategori) => void;
-  onDelete: (item: Kategori) => void;
-}
-
-export function getColumns({ onEdit, onDelete }: ColumnActions) {
+export function getColumns({ onEdit, onDelete }: ColumnActions<Kategori>) {
   return columnHelper.columns([
     columnHelper.accessor("kode_kategori", {
       header: ({ column }) => (

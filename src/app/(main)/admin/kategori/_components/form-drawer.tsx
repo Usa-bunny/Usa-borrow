@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -13,10 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { kategoriSchema, type Kategori } from "./schema";
+import { kategoriSchema, type Kategori, type KategoriInput } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
-
-export type InputData = Omit<Kategori, "id">;
+import type { CrudFormProps } from "@/components/crud/crud-table";
 
 const inputSchema = kategoriSchema.omit({ id: true }).extend({
   kode_kategori: kategoriSchema.shape.kode_kategori.min(
@@ -34,12 +32,7 @@ export function FormDrawer({
   onOpenChange,
   data,
   onSubmit,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  data: Kategori | null;
-  onSubmit: (values: InputData) => void;
-}) {
+}: CrudFormProps<Kategori, KategoriInput>) {
   const isEdit = !!data;
   const isMobile = useIsMobile();
 
@@ -52,11 +45,13 @@ export function FormDrawer({
     >
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{isEdit ? "Edit Alat" : "Tambah Alat"}</DrawerTitle>
+          <DrawerTitle>
+            {isEdit ? "Edit Kategori" : "Tambah Kategori"}
+          </DrawerTitle>
           <DrawerDescription>
             {isEdit
-              ? "Ubah data alat lalu simpan."
-              : "Isi form di bawah untuk menambahkan alat baru."}
+              ? "Ubah data kategori lalu simpan."
+              : "Isi form di bawah untuk menambahkan kategori baru."}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -81,11 +76,11 @@ function Form({
   isEdit,
 }: {
   data: Kategori | null;
-  onSubmit: (values: InputData) => void;
+  onSubmit: (values: KategoriInput) => void;
   onCancel: () => void;
   isEdit: boolean;
 }) {
-  const initialValues: InputData = data
+  const initialValues: KategoriInput = data
     ? {
         kode_kategori: data.kode_kategori,
         nama_kategori: data.nama_kategori,
