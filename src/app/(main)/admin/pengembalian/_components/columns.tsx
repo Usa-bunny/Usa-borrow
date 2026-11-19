@@ -4,6 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import {
   CheckCircle2Icon,
   MoreVerticalIcon,
+  PencilIcon,
   Trash2Icon,
   XCircleIcon,
   PackageCheckIcon,
@@ -28,6 +29,7 @@ const columnHelper = createColumnHelper<Features, Peminjaman>();
 
 export interface PeminjamanActions {
   onChangeStatus: (item: Peminjaman, status: PeminjamanStatus) => void;
+  onEdit: (item: Peminjaman) => void;
   onDelete: (item: Peminjaman) => void;
 }
 
@@ -52,7 +54,11 @@ function StatusBadge({ status }: { status: PeminjamanStatus }) {
   );
 }
 
-export function getColumns({ onChangeStatus, onDelete }: PeminjamanActions) {
+export function getColumns({
+  onChangeStatus,
+  onEdit,
+  onDelete,
+}: PeminjamanActions) {
   return columnHelper.columns([
     columnHelper.accessor("kode_transaksi", {
       header: ({ column }) => (
@@ -104,20 +110,6 @@ export function getColumns({ onChangeStatus, onDelete }: PeminjamanActions) {
         </span>
       ),
     }),
-    columnHelper.accessor("kondisi_alat", {
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Kondisi" />
-      ),
-      cell: ({ row }) => (
-        <span
-          className={
-            !row.original.kondisi_alat ? "text-muted-foreground italic" : ""
-          }
-        >
-          {row.original.kondisi_alat || "-"}
-        </span>
-      ),
-    }),
     columnHelper.accessor("status", {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
@@ -131,6 +123,7 @@ export function getColumns({ onChangeStatus, onDelete }: PeminjamanActions) {
       cell: ({ row }) => {
         const item = row.original;
         const s = item.status;
+        const isFinal = s === "Selesai";
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -146,57 +139,66 @@ export function getColumns({ onChangeStatus, onDelete }: PeminjamanActions) {
               <span className="sr-only">Open menu</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Ubah Status</DropdownMenuLabel>
+              {!isFinal && (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Ubah Status</DropdownMenuLabel>
 
-                {s === "Menunggu" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onChangeStatus(item, "Disetujui")}
-                    >
-                      <CheckCircle2Icon className="mr-2 size-4" /> Setujui
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onChangeStatus(item, "Ditolak")}
-                    >
-                      <XCircleIcon className="mr-2 size-4" /> Tolak
-                    </DropdownMenuItem>
-                  </>
-                )}
+                    {s === "Menunggu" && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => onChangeStatus(item, "Disetujui")}
+                        >
+                          <CheckCircle2Icon className="mr-2 size-4" /> Setujui
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => onChangeStatus(item, "Ditolak")}
+                        >
+                          <XCircleIcon className="mr-2 size-4" /> Tolak
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
-                {s === "Disetujui" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onChangeStatus(item, "Dipinjam")}
-                    >
-                      <HandIcon className="mr-2 size-4" /> Tandai Dipinjam
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onChangeStatus(item, "Ditolak")}
-                    >
-                      <XCircleIcon className="mr-2 size-4" /> Tolak
-                    </DropdownMenuItem>
-                  </>
-                )}
+                    {s === "Disetujui" && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => onChangeStatus(item, "Dipinjam")}
+                        >
+                          <HandIcon className="mr-2 size-4" /> Tandai Dipinjam
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => onChangeStatus(item, "Ditolak")}
+                        >
+                          <XCircleIcon className="mr-2 size-4" /> Tolak
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
-                {s === "Dipinjam" && (
-                  <DropdownMenuItem
-                    onClick={() => onChangeStatus(item, "Selesai")}
-                  >
-                    <PackageCheckIcon className="mr-2 size-4" /> Tandai Selesai
-                  </DropdownMenuItem>
-                )}
+                    {s === "Dipinjam" && (
+                      <DropdownMenuItem
+                        onClick={() => onChangeStatus(item, "Selesai")}
+                      >
+                        <PackageCheckIcon className="mr-2 size-4" /> Tandai
+                        Selesai
+                      </DropdownMenuItem>
+                    )}
 
-                {(s === "Ditolak" || s === "Selesai") && (
-                  <DropdownMenuItem disabled>
-                    Tidak ada aksi status
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
+                    {s === "Ditolak" && (
+                      <DropdownMenuItem disabled>
+                        Tidak ada aksi status
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuGroup>
 
-              <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
+                </>
+              )}
+
+              <DropdownMenuItem onClick={() => onEdit(item)}>
+                <PencilIcon className="mr-2 size-4" /> Edit
+              </DropdownMenuItem>
 
               <DropdownMenuItem
                 variant="destructive"

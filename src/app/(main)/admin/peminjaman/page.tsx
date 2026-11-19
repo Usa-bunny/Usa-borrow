@@ -3,6 +3,7 @@
 import * as React from "react";
 import { PlusIcon, RefreshCwIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@/components/table/data-table";
 import {
   AlertDialog,
@@ -15,52 +16,62 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionStatistic } from "@/components/other/section-statistic";
 import { usePeminjaman, generateKodeTransaksi } from "@/hooks/use-peminjaman";
 import { getColumns } from "./_components/columns";
 import { FormDrawer, type InputData } from "./_components/form-drawer";
-import type { Peminjaman, PeminjamanStatus } from "./_components/schema";
-
-type ViewMode = "peminjaman" | "pengembalian";
+import type { Peminjaman } from "./_components/schema";
 
 export default function ManagePeminjamanPage() {
+  const queryClient = useQueryClient();
   const { query, mutations, changeStatus } = usePeminjaman();
   const { data = [], isFetching, refetch } = query;
   const { add, update, delete: deleteMutation, isPending } = mutations;
 
-  const [viewMode, setViewMode] = React.useState<ViewMode>("peminjaman");
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Peminjaman | null>(null);
   const [deleting, setDeleting] = React.useState<Peminjaman | null>(null);
 
   const filteredData = React.useMemo(() => {
-    if (viewMode === "pengembalian") {
-      return data.filter((d) => d.status === "Selesai");
-    }
     return data.filter((d) => d.status !== "Selesai");
-  }, [data, viewMode]);
+  }, [data]);
 
   const statistic = [
-    { label: "Total Transaksi", value: data.length.toString() },
     {
       label: "Aktif",
       value: data.filter((d) => d.status !== "Selesai").length.toString(),
     },
     {
-      label: "Selesai",
-      value: data.filter((d) => d.status === "Selesai").length.toString(),
+      label: "Menunggu",
+      value: data.filter((d) => d.status === "Menunggu").length.toString(),
+    },
+    {
+      label: "Disetujui",
+      value: data.filter((d) => d.status === "Disetujui").length.toString(),
+    },
+    {
+      label: "Dipinjam",
+      value: data.filter((d) => d.status === "Dipinjam").length.toString(),
     },
   ];
+
+  const handleEdit = React.useCallback((item: Peminjaman) => {
+    setEditing(item);
+    setFormOpen(true);
+  }, []);
 
   const columns = React.useMemo(
     () =>
       getColumns({
+        onEdit: handleEdit,
         onChangeStatus: (item, status) => {
           changeStatus.mutate(
             { id: item.id, newStatus: status },
             {
-              onSuccess: () => toast.success(`Status diubah ke ${status}`),
+              onSuccess: () => {
+                toast.success(`Status diubah ke ${status}`)
+                queryClient.invalidateQueries({ queryKey: ["alat"] }); 
+              },
               onError: (err: any) =>
                 toast.error(err?.message ?? "Gagal mengubah status"),
             },
@@ -68,7 +79,7 @@ export default function ManagePeminjamanPage() {
         },
         onDelete: (item) => setDeleting(item),
       }),
-    [changeStatus],
+    [changeStatus, handleEdit],
   );
 
   function handleAdd() {
@@ -84,26 +95,20 @@ export default function ManagePeminjamanPage() {
           onSuccess: () => {
             toast.success("Peminjaman diperbarui");
             setFormOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["alat"] }); 
           },
           onError: (err: any) =>
             toast.error(err?.message ?? "Gagal memperbarui"),
         },
       );
     } else {
-      add.mutate(
-        {
-          ...values,
-          kode_transaksi: values.kode_transaksi || generateKodeTransaksi(),
+      add.mutate(values, {
+        onSuccess: () => {
+          toast.success("Peminjaman ditambahkan");
+          setFormOpen(false);
         },
-        {
-          onSuccess: () => {
-            toast.success("Peminjaman ditambahkan");
-            setFormOpen(false);
-          },
-          onError: (err: any) =>
-            toast.error(err?.message ?? "Gagal menambahkan"),
-        },
-      );
+        onError: (err: any) => toast.error(err?.message ?? "Gagal menambahkan"),
+      });
     }
   }
 
@@ -113,6 +118,7 @@ export default function ManagePeminjamanPage() {
       onSuccess: () => {
         toast.success("Peminjaman dihapus");
         setDeleting(null);
+        queryClient.invalidateQueries({ queryKey: ["alat"] }); 
       },
       onError: (err: any) => toast.error(err?.message ?? "Gagal menghapus"),
     });
@@ -125,16 +131,6 @@ export default function ManagePeminjamanPage() {
           <SectionStatistic items={statistic} />
 
           <div className="flex flex-col gap-4 px-4 lg:px-6">
-            <Tabs
-              value={viewMode}
-              onValueChange={(v) => setViewMode(v as ViewMode)}
-            >
-              <TabsList>
-                <TabsTrigger value="peminjaman">Peminjaman</TabsTrigger>
-                <TabsTrigger value="pengembalian">Pengembalian</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
             <DataTable
               columns={columns}
               data={filteredData}
@@ -153,18 +149,15 @@ export default function ManagePeminjamanPage() {
                       className={isFetching ? "animate-spin" : ""}
                     />
                   </Button>
-                  {viewMode === "peminjaman" && (
-                    <Button
-                      size="sm"
-                      onClick={handleAdd}
-                      disabled={isFetching || isPending}
-                    >
-                      <PlusIcon className="mr-2 size-4" />
-                      <span className="hidden lg:inline">
-                        Tambah Peminjaman
-                      </span>
-                    </Button>
-                  )}
+
+                  <Button
+                    size="sm"
+                    onClick={handleAdd}
+                    disabled={isFetching || isPending}
+                  >
+                    <PlusIcon className="mr-2 size-4" />
+                    <span className="hidden lg:inline">Tambah Peminjaman</span>
+                  </Button>
                 </div>
               )}
             />

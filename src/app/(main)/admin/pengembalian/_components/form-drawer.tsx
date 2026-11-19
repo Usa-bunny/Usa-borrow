@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { peminjamanSchema, type Peminjaman } from "./schema";
+import type { Peminjaman } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { useCrud } from "@/hooks/use-crud";
 
@@ -31,6 +31,7 @@ export type InputData = {
   jumlah: number;
   tgl_pinjam: string;
   tgl_kembali: string;
+  tgl_dikembalikan: string; // selalu ada di pengembalian
 };
 
 const inputSchema = z.object({
@@ -40,6 +41,7 @@ const inputSchema = z.object({
   jumlah: z.number().min(1, "Jumlah minimal 1"),
   tgl_pinjam: z.string().min(1, "Tanggal pinjam wajib diisi"),
   tgl_kembali: z.string().min(1, "Tanggal kembali wajib diisi"),
+  tgl_dikembalikan: z.string().min(1, "Tanggal dikembalikan wajib diisi"),
 });
 
 export function FormDrawer({
@@ -53,7 +55,6 @@ export function FormDrawer({
   data: Peminjaman | null;
   onSubmit: (values: InputData) => void;
 }) {
-  const isEdit = !!data;
   const isMobile = useIsMobile();
 
   return (
@@ -65,25 +66,20 @@ export function FormDrawer({
     >
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>
-            {isEdit ? "Edit Peminjaman" : "Tambah Peminjaman"}
-          </DrawerTitle>
+          <DrawerTitle>Edit Pengembalian</DrawerTitle>
           <DrawerDescription>
-            {isEdit
-              ? "Ubah data peminjaman lalu simpan."
-              : "Isi form untuk menambahkan peminjaman baru."}
+            Perbarui data pengembalian lalu simpan.
           </DrawerDescription>
         </DrawerHeader>
 
-        <Form
-          data={data}
-          onSubmit={(values) => {
-            onSubmit(values);
-            onOpenChange(false);
-          }}
-          onCancel={() => onOpenChange(false)}
-          isEdit={isEdit}
-        />
+        {data && (
+          <Form
+            key={data.id}
+            data={data}
+            onSubmit={onSubmit}
+            onCancel={() => onOpenChange(false)}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );
@@ -93,12 +89,10 @@ function Form({
   data,
   onSubmit,
   onCancel,
-  isEdit,
 }: {
-  data: Peminjaman | null;
+  data: Peminjaman;
   onSubmit: (values: InputData) => void;
   onCancel: () => void;
-  isEdit: boolean;
 }) {
   const { query: userQuery } = useCrud<any, any>({
     table: "users",
@@ -111,23 +105,15 @@ function Form({
     orderBy: { column: "nama_alat" },
   });
 
-  const initialValues: InputData = data
-    ? {
-        kode_transaksi: data.kode_transaksi,
-        id_user: data.id_user ?? "",
-        id_alat: data.id_alat ?? "",
-        jumlah: data.jumlah,
-        tgl_pinjam: data.tgl_pinjam,
-        tgl_kembali: data.tgl_kembali,
-      }
-    : {
-        kode_transaksi: "",
-        id_user: "",
-        id_alat: "",
-        jumlah: 1,
-        tgl_pinjam: new Date().toISOString().slice(0, 10),
-        tgl_kembali: "",
-      };
+  const initialValues: InputData = {
+    kode_transaksi: data.kode_transaksi,
+    id_user: data.id_user ?? "",
+    id_alat: data.id_alat ?? "",
+    jumlah: data.jumlah,
+    tgl_pinjam: data.tgl_pinjam,
+    tgl_kembali: data.tgl_kembali,
+    tgl_dikembalikan: data.tgl_dikembalikan ?? "",
+  };
 
   const { values, errors, set, handleSubmit } = useFormValidation(
     initialValues,
@@ -141,21 +127,16 @@ function Form({
   return (
     <>
       <form
-        id="peminjaman-form"
+        id="pengembalian-form"
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
         <div className="flex flex-col gap-3">
           <Label htmlFor="kode_transaksi">Kode Transaksi</Label>
-          <Input
-            id="kode_transaksi"
-            value={values.kode_transaksi}
-            onChange={(e) => set("kode_transaksi", e.target.value)}
-            aria-invalid={!!errors.kode_transaksi}
-          />
-          {errors.kode_transaksi && (
-            <p className="text-xs text-destructive">{errors.kode_transaksi}</p>
-          )}
+          <Input id="kode_transaksi" value={values.kode_transaksi} disabled />
+          <p className="text-xs text-muted-foreground">
+            Kode transaksi tidak dapat diubah.
+          </p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -165,7 +146,11 @@ function Form({
             onValueChange={(v) => v && set("id_user", v)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={userQuery.isLoading ? "Memuat..." : "Pilih peminjam"}>
+              <SelectValue
+                placeholder={
+                  userQuery.isLoading ? "Memuat..." : "Pilih peminjam"
+                }
+              >
                 {selectedUser?.nama_lengkap}
               </SelectValue>
             </SelectTrigger>
@@ -189,7 +174,9 @@ function Form({
             onValueChange={(v) => v && set("id_alat", v)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={alatQuery.isLoading ? "Memuat..." : "Pilih alat"}>
+              <SelectValue
+                placeholder={alatQuery.isLoading ? "Memuat..." : "Pilih alat"}
+              >
                 {selectedAlat?.nama_alat}
               </SelectValue>
             </SelectTrigger>
@@ -227,12 +214,11 @@ function Form({
             id="tgl_pinjam"
             type="date"
             value={values.tgl_pinjam}
-            onChange={(e) => set("tgl_pinjam", e.target.value)}
-            aria-invalid={!!errors.tgl_pinjam}
+            disabled
           />
-          {errors.tgl_pinjam && (
-            <p className="text-xs text-destructive">{errors.tgl_pinjam}</p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            Tanggal pinjam tidak dapat diubah.
+          </p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -248,11 +234,27 @@ function Form({
             <p className="text-xs text-destructive">{errors.tgl_kembali}</p>
           )}
         </div>
+
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="tgl_dikembalikan">Tanggal Dikembalikan</Label>
+          <Input
+            id="tgl_dikembalikan"
+            type="date"
+            value={values.tgl_dikembalikan}
+            onChange={(e) => set("tgl_dikembalikan", e.target.value)}
+            aria-invalid={!!errors.tgl_dikembalikan}
+          />
+          {errors.tgl_dikembalikan && (
+            <p className="text-xs text-destructive">
+              {errors.tgl_dikembalikan}
+            </p>
+          )}
+        </div>
       </form>
 
       <DrawerFooter>
-        <Button type="submit" form="peminjaman-form">
-          {isEdit ? "Simpan Perubahan" : "Tambah"}
+        <Button type="submit" form="pengembalian-form">
+          Simpan Perubahan
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Batal

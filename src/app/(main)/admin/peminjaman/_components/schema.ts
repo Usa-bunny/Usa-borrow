@@ -18,7 +18,6 @@ export const peminjamanSchema = z.object({
   tgl_pinjam: z.string(),
   tgl_kembali: z.string(),
   tgl_dikembalikan: z.string().nullable().optional(),
-  kondisi_alat: z.string().nullable().optional(),
   status: peminjamanStatusSchema,
   created_at: z.string(),
   user: z.object({ nama_lengkap: z.string() }).optional().nullable(),

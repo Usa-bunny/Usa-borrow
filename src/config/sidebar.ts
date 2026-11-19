@@ -27,7 +27,8 @@ const adminMenu: NavItem[] = [
   { title: "Manage User", url: "/admin/users", icon: Users },
   { title: "Manage Alat", url: "/admin/alat", icon: HardDrive },
   { title: "Manage Kategori", url: "/admin/kategori", icon: Tags },
-  { title: "Peminjaman & Pengembalian", url: "/admin/transaksi", icon: ClipboardList },
+  { title: "Peminjaman", url: "/admin/peminjaman", icon: ClipboardList },
+  { title: "Pengembalian", url: "/admin/pengembalian", icon: RefreshCw },
   { title: "Log Aktivitas", url: "/admin/logs", icon: History },
 ];
 
@@ -46,7 +47,11 @@ const petugasMenu: NavItem[] = [
 
 const peminjamMenu: NavItem[] = [
   { title: "Daftar Alat", url: "/peminjam/daftar-alat", icon: Eye },
-  { title: "Mengajukan Peminjaman", url: "/peminjam/ajukan-peminjaman", icon: FilePlus },
+  {
+    title: "Mengajukan Peminjaman",
+    url: "/peminjam/ajukan-peminjaman",
+    icon: FilePlus,
+  },
 ];
 
 export function getSidebarMenu(role: string): NavItem[] {

@@ -4,8 +4,8 @@ import { useCrud } from "@/hooks/use-crud";
 import type {
   Peminjaman,
   PeminjamanStatus,
-} from "@/app/(main)/admin/transaksi/_components/schema";
-import type { InputData } from "@/app/(main)/admin/transaksi/_components/form-drawer";
+} from "@/app/(main)/admin/peminjaman/_components/schema";
+import type { InputData } from "@/app/(main)/admin/peminjaman/_components/form-drawer";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -28,26 +28,31 @@ export function usePeminjaman() {
   const queryClient = useQueryClient();
   const supabase = createClient();
 
-  const invalidate = () =>
+  const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["peminjaman"] });
+    // WAJIB: Agar stok di tabel alat langsung ter-refresh di UI
+    queryClient.invalidateQueries({ queryKey: ["alat"] });
+  };
 
   const changeStatus = useMutation<
     void,
     Error,
-    { id: string; newStatus: PeminjamanStatus; kondisi_alat?: string }
+    { id: string; newStatus: PeminjamanStatus }
   >({
-    mutationFn: async ({ id, newStatus, kondisi_alat }) => {
+    mutationFn: async ({ id, newStatus }) => {
       const updates: Record<string, any> = { status: newStatus };
 
       if (newStatus === "Selesai") {
         updates.tgl_dikembalikan = today();
-        updates.kondisi_alat = kondisi_alat ?? null;
       }
 
       const { error } = await supabase
         .from("peminjaman")
         .update(updates)
-        .eq("id", id);
+        .eq("id", id)
+        .select()
+        .single();
+
       if (error) throw error;
     },
     onSuccess: invalidate,
