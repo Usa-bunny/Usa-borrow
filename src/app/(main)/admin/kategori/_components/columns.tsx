@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
 import type { Kategori } from "./schema";
-import type { ColumnActions } from "@/components/crud/crud-table";
+import type { ColumnActions } from "@/components/table/crud-table";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 
 const columnHelper = createColumnHelper<Features, Kategori>();

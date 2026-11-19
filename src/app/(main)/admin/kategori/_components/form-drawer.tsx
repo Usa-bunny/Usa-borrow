@@ -14,15 +14,17 @@ import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { kategoriSchema, type Kategori, type KategoriInput } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
-import type { CrudFormProps } from "@/components/crud/crud-table";
+import type { CrudFormProps } from "@/components/table/crud-table";
 
 // HAPUS kode_kategori dari schema validasi
-const inputSchema = kategoriSchema.omit({ id: true, kode_kategori: true }).extend({
-  nama_kategori: kategoriSchema.shape.nama_kategori.min(
-    1,
-    "Nama kategori wajib diisi",
-  ),
-});
+const inputSchema = kategoriSchema
+  .omit({ id: true, kode_kategori: true })
+  .extend({
+    nama_kategori: kategoriSchema.shape.nama_kategori.min(
+      1,
+      "Nama kategori wajib diisi",
+    ),
+  });
 
 export function FormDrawer({
   open,

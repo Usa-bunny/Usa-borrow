@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionStatistic } from "@/components/other/section-statistic";
-import { CrudTable } from "@/components/crud/crud-table";
+import { CrudTable } from "@/components/table/crud-table";
 import { useUser } from "@/hooks/use-user";
 import { getColumns } from "./_components/columns";
 import { FormDrawer, type InputData } from "./_components/form-drawer";
@@ -15,15 +15,21 @@ export default function ManageUserPage() {
     { label: "Total User", value: isLoading ? "..." : data.length.toString() },
     {
       label: "Admin",
-      value: isLoading ? "..." : data.filter((d) => d.role === "Admin").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.role === "Admin").length.toString(),
     },
     {
       label: "Petugas",
-      value: isLoading ? "..." : data.filter((d) => d.role === "Petugas").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.role === "Petugas").length.toString(),
     },
     {
       label: "Peminjam",
-      value: isLoading ? "..." : data.filter((d) => d.role === "Peminjam").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.role === "Peminjam").length.toString(),
     },
   ];
 

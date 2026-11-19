@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
-import type { ColumnActions } from "@/components/crud/crud-table";
+import type { ColumnActions } from "@/components/table/crud-table";
 import type { Alat } from "./schema";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 

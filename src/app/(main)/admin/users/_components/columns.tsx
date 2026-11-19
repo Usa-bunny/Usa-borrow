@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
-import type { ColumnActions } from "@/components/crud/crud-table";
+import type { ColumnActions } from "@/components/table/crud-table";
 import type { User, UserRole } from "./schema";
 
 const columnHelper = createColumnHelper<Features, User>();

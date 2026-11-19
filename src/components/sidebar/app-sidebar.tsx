@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import {
@@ -15,37 +14,72 @@ import {
 } from "@/components/ui/sidebar";
 import { getSidebarMenu } from "@/config/sidebar";
 import { Separator } from "../ui/separator";
-import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return null;
-      const profile = await supabase
+  const [profile, setProfile] = React.useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  // Gunakan useMemo agar supabase client tidak dibuat ulang terus menerus
+  const supabase = React.useMemo(() => createClient(), []);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        if (isMounted) {
+          setProfile(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("id", user.id)
         .single();
-      return profile?.data;
-    },
-    staleTime: 1000 * 60 * 5,
-  });
+
+      if (isMounted) {
+        if (!error && data) {
+          setProfile(data);
+        } else {
+          setProfile(null);
+        }
+        setIsLoading(false);
+      }
+    };
+
+    // 1. Ambil profil saat pertama kali komponen dimuat
+    fetchProfile();
+
+    // 2. Dengarkan perubahan status Auth (Login / Logout / Ganti Akun)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        fetchProfile();
+      }
+    });
+
+    // 3. Bersihkan listener saat komponen di-unmount
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const sidebarMenu = profile?.role ? getSidebarMenu(profile.role) : [];
 
   const data = {
     user: {
-      name: profile?.nama_lengkap,
-      email: profile?.email,
+      name: profile?.nama_lengkap || "Memuat...",
+      email: profile?.email || "",
     },
     navMain: sidebarMenu,
   };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

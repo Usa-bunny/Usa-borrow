@@ -22,7 +22,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { userRoleSchema, type User, type UserRole } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
-import type { CrudFormProps } from "@/components/crud/crud-table";
+import type { CrudFormProps } from "@/components/table/crud-table";
 
 export type InputData = {
   nama_lengkap: string;

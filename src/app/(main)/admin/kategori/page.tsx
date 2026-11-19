@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionStatistic } from "@/components/other/section-statistic";
-import { CrudTable } from "@/components/crud/crud-table";
+import { CrudTable } from "@/components/table/crud-table";
 import { useKategori } from "@/hooks/use-kategori";
 import { getColumns } from "./_components/columns";
 import { FormDrawer } from "./_components/form-drawer";
