@@ -30,7 +30,6 @@ export function usePeminjaman() {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["peminjaman"] });
-    // WAJIB: Agar stok di tabel alat langsung ter-refresh di UI
     queryClient.invalidateQueries({ queryKey: ["alat"] });
   };
 

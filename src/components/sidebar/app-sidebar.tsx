@@ -20,7 +20,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [profile, setProfile] = React.useState<any>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Gunakan useMemo agar supabase client tidak dibuat ulang terus menerus
   const supabase = React.useMemo(() => createClient(), []);
 
   React.useEffect(() => {
@@ -53,17 +52,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
     };
 
-    // 1. Ambil profil saat pertama kali komponen dimuat
     fetchProfile();
 
-    // 2. Dengarkan perubahan status Auth (Login / Logout / Ganti Akun)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
         fetchProfile();
       }
     });
 
-    // 3. Bersihkan listener saat komponen di-unmount
     return () => {
       isMounted = false;
       authListener.subscription.unsubscribe();

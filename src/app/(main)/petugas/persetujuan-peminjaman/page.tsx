@@ -8,20 +8,17 @@ import { Button } from "@/components/ui/button";
 import { SectionStatistic } from "@/components/other/section-statistic";
 import { usePeminjaman } from "@/hooks/use-peminjaman";
 import { getColumns } from "./_components/columns";
-// Import useQueryClient untuk refresh tabel alat jika stok berubah
-import { useQueryClient } from "@tanstack/react-query"; 
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PetugasPersetujuanPage() {
   const { query, changeStatus } = usePeminjaman();
   const { data = [], isFetching, refetch } = query;
   const queryClient = useQueryClient();
 
-  // Menampilkan semua data peminjaman yang BELUM selesai
   const filteredData = React.useMemo(() => {
     return data.filter((d) => d.status !== "Selesai");
   }, [data]);
 
-  // Statistik Ringkas untuk Petugas
   const statistic = [
     {
       label: "Menunggu Persetujuan",
@@ -46,17 +43,15 @@ export default function PetugasPersetujuanPage() {
             {
               onSuccess: () => {
                 toast.success(`Status berhasil diubah ke ${status}`);
-                // Jika status jadi Dipinjam/Selesai, trigger database akan mengurangi/menambah stok alat
-                // Kita perlu invalidate cache "alat" agar UI form peminjaman lain ikut update stoknya
                 queryClient.invalidateQueries({ queryKey: ["alat"] });
               },
               onError: (err: any) =>
                 toast.error(err?.message ?? "Gagal mengubah status"),
-            }
+            },
           );
         },
       }),
-    [changeStatus, queryClient]
+    [changeStatus, queryClient],
   );
 
   return (
@@ -84,7 +79,6 @@ export default function PetugasPersetujuanPage() {
                       className={isFetching ? "animate-spin" : ""}
                     />
                   </Button>
-                  {/* TIDAK ADA TOMBOL TAMBAH UNTUK PETUGAS */}
                 </div>
               )}
             />

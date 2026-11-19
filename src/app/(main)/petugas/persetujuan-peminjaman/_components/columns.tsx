@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Features } from "@/components/table/features";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
-// Sesuaikan path schema dengan lokasi project-mu
 import type { Peminjaman, PeminjamanStatus } from "@/app/(main)/admin/peminjaman/_components/schema";
 
 const columnHelper = createColumnHelper<Features, Peminjaman>();
@@ -155,7 +154,6 @@ export function getColumns({ onChangeStatus }: PetugasActions) {
                   </DropdownMenuItem>
                 )}
               </DropdownMenuGroup>
-              {/* Tidak ada Edit & Hapus untuk Petugas */}
             </DropdownMenuContent>
           </DropdownMenu>
         );

@@ -117,6 +117,50 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@media print {
+  /* Sembunyikan elemen dengan class ini saat dicetak */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Pastikan background putih dan teks hitam */
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Paksa tabel agar tidak terpotong aneh */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  /* Sembunyikan sidebar, header, dan tombol */
+  aside,
+  nav,
+  header,
+  button {
+    display: none !important;
+  }
+
+  /* Format tabel print (Menargetkan tabel di dalam div.print-table) */
+  .print-table table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #000 !important;
+    padding: 8px !important;
+    text-align: left !important;
+    color: black !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

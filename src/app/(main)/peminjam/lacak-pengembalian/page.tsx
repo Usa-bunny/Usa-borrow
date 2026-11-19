@@ -8,13 +8,14 @@ import { SectionStatistic } from "@/components/other/section-statistic";
 import { usePeminjaman } from "@/hooks/use-peminjaman";
 import { getColumns } from "./_components/columns";
 
-export default function PantauPengembalianPage() {
+export default function PeminjamPengembalianPage() {
   const { query } = usePeminjaman();
   const { data = [], isFetching, refetch } = query;
 
-  // Hanya ambil data yang sedang berjalan (Dipinjam) atau sudah kembali (Selesai)
   const filteredData = React.useMemo(() => {
-    return data.filter((d) => d.status === "Dipinjam" || d.status === "Selesai");
+    return data.filter(
+      (d) => d.status === "Dipinjam" || d.status === "Selesai",
+    );
   }, [data]);
 
   const statistic = [
@@ -23,12 +24,11 @@ export default function PantauPengembalianPage() {
       value: data.filter((d) => d.status === "Dipinjam").length.toString(),
     },
     {
-      label: "Sudah Dikembalikan",
+      label: "Selesai (Dikembalikan)",
       value: data.filter((d) => d.status === "Selesai").length.toString(),
     },
   ];
 
-  // Panggil getColumns tanpa parameter karena tidak ada aksi apa-apa
   const columns = React.useMemo(() => getColumns(), []);
 
   return (
@@ -38,11 +38,17 @@ export default function PantauPengembalianPage() {
           <SectionStatistic items={statistic} />
 
           <div className="flex flex-col gap-4 px-4 lg:px-6">
+            <div className="bg-green-50 text-green-800 p-4 rounded-lg text-sm border border-green-200">
+              <strong>Informasi:</strong> Untuk mengembalikan alat, silakan bawa
+              alat fisik ke Petugas/Admin. Status akan diperbarui oleh Petugas
+              setelah alat diterima dengan baik.
+            </div>
+
             <DataTable
               columns={columns}
               data={filteredData}
               getRowId={(row) => row.id}
-              searchPlaceholder="Cari kode transaksi, peminjam, atau alat..."
+              searchPlaceholder="Cari kode transaksi atau nama alat..."
               toolbar={() => (
                 <div className="flex gap-2">
                   <Button
@@ -50,7 +56,6 @@ export default function PantauPengembalianPage() {
                     size="sm"
                     onClick={() => refetch()}
                     disabled={isFetching}
-                    title="Refresh data"
                   >
                     <RefreshCwIcon
                       className={isFetching ? "animate-spin" : ""}

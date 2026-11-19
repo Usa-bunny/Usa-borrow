@@ -32,10 +32,9 @@ export default function ActivityLogPage() {
       getColumns({
         onDetail: (item) => setDetailData(item),
       }),
-    []
+    [],
   );
 
-  // --- STATISTIK DIPERBARUI ---
   const statistic = [
     {
       label: "Total Log",
@@ -43,15 +42,21 @@ export default function ActivityLogPage() {
     },
     {
       label: "Tambah",
-      value: isLoading ? "..." : data.filter((d) => d.aksi === "TAMBAH").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.aksi === "TAMBAH").length.toString(),
     },
     {
       label: "Edit",
-      value: isLoading ? "..." : data.filter((d) => d.aksi === "UBAH").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.aksi === "UBAH").length.toString(),
     },
     {
       label: "Hapus",
-      value: isLoading ? "..." : data.filter((d) => d.aksi === "HAPUS").length.toString(),
+      value: isLoading
+        ? "..."
+        : data.filter((d) => d.aksi === "HAPUS").length.toString(),
     },
   ];
 
@@ -60,7 +65,7 @@ export default function ActivityLogPage() {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <SectionStatistic items={statistic} />
-          
+
           <div className="flex flex-col gap-4 px-4 lg:px-6">
             <DataTable
               columns={columns}
@@ -76,7 +81,9 @@ export default function ActivityLogPage() {
                     disabled={isFetching}
                     title="Refresh data"
                   >
-                    <RefreshCwIcon className={isFetching ? "animate-spin" : ""} />
+                    <RefreshCwIcon
+                      className={isFetching ? "animate-spin" : ""}
+                    />
                   </Button>
                 </div>
               )}
@@ -85,23 +92,31 @@ export default function ActivityLogPage() {
         </div>
       </div>
 
-      {/* MODAL LIHAT DETAIL (Diperbesar) */}
-      <Dialog open={!!detailData} onOpenChange={(open) => !open && setDetailData(null)}>
-        {/* Menggunakan max-w-6xl untuk layar lebar dan tinggi 90vh */}
+      <Dialog
+        open={!!detailData}
+        onOpenChange={(open) => !open && setDetailData(null)}
+      >
         <DialogContent className="max-w-[95vw] lg:max-w-6xl max-h-[90vh] flex flex-col p-6">
           <DialogHeader>
             <DialogTitle className="text-xl">Detail Log Aktivitas</DialogTitle>
             <DialogDescription className="text-base">
-              Aksi <span className="font-bold text-foreground">{detailData?.aksi}</span> pada tabel{" "}
-              <span className="font-bold text-foreground">{detailData?.tabel}</span> oleh{" "}
-              <span className="font-bold text-foreground">{detailData?.user?.nama_lengkap || "Sistem"}</span>
+              Aksi{" "}
+              <span className="font-bold text-foreground">
+                {detailData?.aksi}
+              </span>{" "}
+              pada tabel{" "}
+              <span className="font-bold text-foreground">
+                {detailData?.tabel}
+              </span>{" "}
+              oleh{" "}
+              <span className="font-bold text-foreground">
+                {detailData?.user?.nama_lengkap || "Sistem"}
+              </span>
             </DialogDescription>
           </DialogHeader>
-          
-          {/* Area Konten JSON dengan scroll independen */}
+
           <div className="flex-1 overflow-y-auto mt-4 pr-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              
               {detailData?.data_lama && (
                 <div className="flex flex-col gap-2">
                   <h3 className="font-semibold text-sm text-red-500 flex items-center gap-2">
@@ -113,7 +128,7 @@ export default function ActivityLogPage() {
                   </pre>
                 </div>
               )}
-              
+
               {detailData?.data_baru && (
                 <div className="flex flex-col gap-2">
                   <h3 className="font-semibold text-sm text-green-600 flex items-center gap-2">
@@ -125,7 +140,6 @@ export default function ActivityLogPage() {
                   </pre>
                 </div>
               )}
-
             </div>
           </div>
         </DialogContent>

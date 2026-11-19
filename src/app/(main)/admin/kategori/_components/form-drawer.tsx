@@ -16,7 +16,6 @@ import { kategoriSchema, type Kategori, type KategoriInput } from "./schema";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import type { CrudFormProps } from "@/components/table/crud-table";
 
-// HAPUS kode_kategori dari schema validasi
 const inputSchema = kategoriSchema
   .omit({ id: true, kode_kategori: true })
   .extend({
@@ -104,7 +103,6 @@ function Form({
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
-        {/* TAMPILKAN KODE HANYA SAAT EDIT */}
         {isEdit && data && (
           <div className="flex flex-col gap-3">
             <Label>Kode Kategori</Label>

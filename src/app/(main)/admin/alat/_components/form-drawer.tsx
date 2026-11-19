@@ -24,7 +24,6 @@ import {
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { useCrud } from "@/hooks/use-crud";
 
-// HAPUS kode_alat dari schema validasi karena dibuat oleh DB
 const inputSchema = alatSchema.omit({ id: true, kategori: true, kode_alat: true }).extend({
   nama_alat: alatSchema.shape.nama_alat.min(1, "Nama Alat wajib diisi"),
   id_kategori: alatSchema.shape.id_kategori.min(1, "Kategori wajib diisi"),
@@ -126,7 +125,6 @@ function Form({
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 overflow-y-auto px-4 text-sm"
       >
-        {/* TAMPILKAN KODE HANYA SAAT EDIT */}
         {isEdit && data && (
           <div className="flex flex-col gap-3">
             <Label>Kode Alat</Label>

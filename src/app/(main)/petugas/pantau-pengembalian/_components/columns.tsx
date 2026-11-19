@@ -77,6 +77,5 @@ export function getColumns() {
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     }),
-    // Tidak ada kolom Actions (titik tiga) sama sekali
   ]);
 }

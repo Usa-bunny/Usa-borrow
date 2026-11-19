@@ -2,10 +2,12 @@ import {
   CheckSquare,
   ClipboardList,
   Eye,
+  File,
   FilePlus,
   HardDrive,
   History,
   LucideIcon,
+  RefreshCcw,
   RefreshCw,
   Tags,
   Users,
@@ -35,14 +37,19 @@ const adminMenu: NavItem[] = [
 const petugasMenu: NavItem[] = [
   {
     title: "Persetujuan Peminjaman",
-    url: "/petugas/persetujuan",
+    url: "/petugas/persetujuan-peminjaman",
     icon: CheckSquare,
   },
   {
     title: "Pantau Pengembalian",
-    url: "/petugas/pengembalian",
+    url: "/petugas/pantau-pengembalian",
     icon: RefreshCw,
   },
+  // {
+  //   title: "Laporan",
+  //   url: "/petugas/laporan",
+  //   icon: File,
+  // },
 ];
 
 const peminjamMenu: NavItem[] = [
@@ -51,6 +58,11 @@ const peminjamMenu: NavItem[] = [
     title: "Mengajukan Peminjaman",
     url: "/peminjam/ajukan-peminjaman",
     icon: FilePlus,
+  },
+  {
+    title: "Melacak Pengembalian",
+    url: "/peminjam/lacak-pengembalian",
+    icon: RefreshCcw,
   },
 ];
 
